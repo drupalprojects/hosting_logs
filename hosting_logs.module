@@ -1,0 +1,81 @@
+<?php
+
+function hosting_logs_menu() {
+
+  $items['node/%/logs/error'] = array(
+    'title' => 'Error Log',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['node/%/logs'] = array(
+    'title' => 'Logs',
+    'description' => 'View apache error logs.',
+    'page callback' => 'hosting_logs_page_error',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'hosting_logs_menu_access',
+    'access arguments' => array(1),
+  );
+  $items['node/%/logs/dblog'] = array(
+    'title' => 'Watchdog',
+    'description' => 'View watchdog logs for this site.',
+    'page callback' => 'hosting_logs_page_dblog',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'hosting_logs_menu_access',
+    'access arguments' => array(1),
+  );
+  return $items;
+}
+
+/**
+ * The access callback for the Logs tab
+ *
+ * Make sure user has perms to veiw and and also that the node we are
+ * viewing is a platform node.
+ */
+function hosting_logs_menu_access($nid) {
+return true;
+  if (!user_access('access hosting logs')) {
+    return FALSE;
+  }
+
+  // Only allow for site nodes
+  $node = node_load($nid);
+  if (!$node || ($node->type != 'site')) {
+    return FALSE;
+  } else {
+    return TRUE;
+  }
+}
+
+/**
+ * Page callback for error log
+ */
+function hosting_logs_page_error($nid) {
+  $node = node_load($nid);
+  $uri = $node->title;
+
+  $log_file_path = variable_get('provision_logs_file_path', '/var/aegir/logs');
+  $log_url_path = variable_get('provision_logs_url_path', 'error.log');
+
+  $path_to_log = "$log_file_path/$uri.error.log";
+
+  $output = file_get_contents($path_to_log);
+
+  if (empty($output)){
+    $output = t('Nothing found (or access denied for user !user) at %path.', array('%path' => $path_to_log));
+  } else {
+    $rows = array();
+    $lines = array_reverse(explode("\n", $output));
+    foreach ($lines as $line) {
+      $line = str_replace('[', '', $line);
+      $row = explode(']', $line);
+      $rows[] = $row;
+    }
+    $headers = array(t('Time'), t('Type'), t('Client'), t('Errors'));
+    $output = theme('table', $headers, $rows);
+
+  }
+  return $output;
+}
