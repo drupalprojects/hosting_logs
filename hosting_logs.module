@@ -35,7 +35,6 @@ function hosting_logs_menu() {
  * viewing is a platform node.
  */
 function hosting_logs_menu_access($nid) {
-return true;
   if (!user_access('access hosting logs')) {
     return FALSE;
   }
@@ -63,8 +62,11 @@ function hosting_logs_page_error($nid) {
 
   $output = file_get_contents($path_to_log);
 
-  if (empty($output)){
-    $output = t('Nothing found (or access denied for user !user) at %path.', array('%path' => $path_to_log));
+  if (empty($output) && file_exists($path_to_log)){
+    $output = t('The log file is empty.');
+  }
+  elseif (empty($output)) {
+    $output = t('Cannot access log file at %path.', array('%path' => $path_to_log));
   } else {
     $rows = array();
     $lines = array_reverse(explode("\n", $output));
