@@ -101,6 +101,17 @@ function hosting_logs_form_site_node_form_alter(&$form){
 }
 
 /**
+ * Implementation of hook_nodeapi().
+ *
+ */
+function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
+  if ($op == 'load' && $node->type == 'site'){
+    $node->logs_available = TRUE;
+  }
+}
+
+
+/**
  * Helper to get the link to the error logs.
  */
 function hosting_logs_errors_link($node, $return = 'html'){
