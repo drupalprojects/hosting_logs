@@ -106,6 +106,7 @@ function hosting_logs_form_site_node_form_alter(&$form){
  */
 function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
   if ($op == 'load' && $node->type == 'site'){
+    $node->logs_enabled = TRUE;
     $node->logs_available = TRUE;
   }
 }
