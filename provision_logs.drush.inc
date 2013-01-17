@@ -42,6 +42,7 @@ function drush_provision_logs_pre_hosting_task() {
   // If it has a git branch, we should checkout as well.
   if ($task->ref->type == 'site' && $task->task_type == 'verify') {
     drush_log('site being verified LOGS', 'ok');
+    $task->options['logs_enabled'] = $task->ref->logs_enabled;
     $task->options['logs_available'] = $task->ref->logs_available;
   }
 }
