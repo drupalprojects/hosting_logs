@@ -166,3 +166,47 @@ function hosting_logs_database_exists($name, $dsn, $user, $pass) {
     return FALSE;
   }
 }
+
+/*
+ * Implements hook_form_alter() for site-node-form
+ *
+ * Allows a site to turn it's error logs on and off.
+ */
+function hosting_logs_form_site_node_form_alter(&$form){
+  $node = $form['#node'];
+  $link = _hosting_site_url($node);
+  $form['logs_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Save server errors to /var/aegir/logs/!name', array('!name' => $node->title)),
+  );
+  $form['logs_available'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
+  );
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ */
+function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
+  if ($op == 'load' && $node->type == 'site'){
+    $node->logs_enabled = TRUE;
+    $node->logs_available = TRUE;
+  }
+}
+
+
+/**
+ * Helper to get the link to the error logs.
+ */
+function hosting_logs_errors_link($node, $return = 'html'){
+  $link = _hosting_site_url($node);
+  $link .= '/error.log';
+  if ($return == 'html'){
+    return l($link, $link, array());
+  } elseif ($return = 'url'){
+    return $link;
+  }
+}
+>>>>>>> 70e1a0ee2e5db407c72ef534cb88d2df9a7c13be
