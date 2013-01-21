@@ -119,14 +119,35 @@ function hosting_logs_page_dblog($node) {
 
   //First check if is enable database loggin
   if (db_result(db_query("SELECT status FROM {system} WHERE name='dblog'"))) {
-    $message = 'test';
+    $header = array();
+    $data = array();
+    $result = db_query("DESCRIBE {watchdog}");
+
+    while ($item = db_fetch_object($result)) {
+      $header[] = $item->Field;
+    }
+
+    $result = pager_query("SELECT * FROM {watchdog} ORDER BY wid DESC", 100);
+
+    while ($item = db_fetch_array($result)) {
+      //Unserialize data for varialbes
+      $item['variables'] = print_r(unserialize($item['variables']), 1);
+
+      //Remove domain location
+      $item['location'] = str_replace('http://'. $node->title, '', $item['location']);
+      $data[] = $item;
+    }
+
+    //Enable aegir database
+    $active_db = $old_connect;
+    $message = theme('table', $header, $data);
+    $message .= theme('pager');
   }
   else {
+    //Enable aegir database
+    $active_db = $old_connect;
     $message = t('This site isn\'t enable database loggin module');
   }
-
-  //Enable aegir database
-  $active_db = $old_connect;
 
   return $message;
 }
