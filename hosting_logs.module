@@ -209,4 +209,3 @@ function hosting_logs_errors_link($node, $return = 'html'){
     return $link;
   }
 }
->>>>>>> 70e1a0ee2e5db407c72ef534cb88d2df9a7c13be
