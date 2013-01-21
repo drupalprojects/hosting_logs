@@ -199,10 +199,12 @@ function hosting_logs_form_site_node_form_alter(&$form){
   $form['logs_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Save server errors to /var/aegir/logs/!name', array('!name' => $node->title)),
+    '#default_value' => $node->logs_enabled,
   );
   $form['logs_available'] = array(
     '#type' => 'checkbox',
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
+    '#default_value' => $node->logs_available,
   );
   return $form;
 }
@@ -212,17 +214,30 @@ function hosting_logs_form_site_node_form_alter(&$form){
  *
  */
 function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
-  if ($op == 'load' && $node->type == 'site'){
-   $result = db_query_range('SELECT h.logs_enabled, h.logs_available FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
-    dsm("ok hozay");
-    dsm(db_fetch_object($result));
-    while ($data = db_fetch_object($result)) {
-      dsm("pass");
-      dsm($data);
-      $node->logs_enabled = TRUE;
-      $node->logs_available = TRUE;
+  if ($node->type == 'site'){
+
+    switch ($op) {
+      case 'load':{
+        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE `site_nid` = %d', $node->nid);
+        while ($data = db_fetch_object($result)) {
+          $node->logs_enabled = $data->logs_enabled;
+          $node->logs_available = $data->logs_available;
+        }
+        break;
+      }
+      case 'insert':
+      case 'update':{
+        $fields = array(
+          'logs_enabled' => $node->logs_enabled,
+          'logs_available' => $node->logs_available,
+          'site_nid' => $node->nid,
+          );
+        drupal_write_record('hosting_logs', $fields, 'site_nid');
+        break;
+      }
+      default:
+      break;
     }
-    dsm("ok adios");
   }
 }
 
