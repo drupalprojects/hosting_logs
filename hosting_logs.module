@@ -114,7 +114,7 @@ function hosting_logs_page_dblog($node) {
   //Connect to BD for get Data
   global $active_db, $db_url;
 
-  $old_connect = $active_db; 
+  $old_connect = $active_db;
   $active_db = db_connect($db_url_new);
 
   //First check if is enable database loggin
@@ -183,6 +183,7 @@ function hosting_logs_form_site_node_form_alter(&$form){
     '#type' => 'checkbox',
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
   );
+  return $form;
 }
 
 /**
@@ -191,8 +192,16 @@ function hosting_logs_form_site_node_form_alter(&$form){
  */
 function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
   if ($op == 'load' && $node->type == 'site'){
-    $node->logs_enabled = TRUE;
-    $node->logs_available = TRUE;
+   $result = db_query_range('SELECT h.logs_enabled, h.logs_available FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
+    dsm("ok hozay");
+    dsm(db_fetch_object($result));
+    while ($data = db_fetch_object($result)) {
+      dsm("pass");
+      dsm($data);
+      $node->logs_enabled = TRUE;
+      $node->logs_available = TRUE;
+    }
+    dsm("ok adios");
   }
 }
 
