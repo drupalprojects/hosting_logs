@@ -206,6 +206,8 @@ function hosting_logs_form_site_node_form_alter(&$form){
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
     '#default_value' => $node->logs_available,
   );
+  //dsm('falter');
+  //dsm($node);
   return $form;
 }
 
@@ -218,10 +220,20 @@ function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
 
     switch ($op) {
       case 'load':{
-        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE `site_nid` = %d', $node->nid);
+        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
         while ($data = db_fetch_object($result)) {
           $node->logs_enabled = $data->logs_enabled;
           $node->logs_available = $data->logs_available;
+        }
+        if(!(isset($node->logs_enabled) && isset($node->logs_available))){
+          $fields = array(
+          'logs_enabled' => FALSE,
+          'logs_available' => FALSE,
+          'site_nid' => $node->nid,
+          );
+        drupal_write_record('hosting_logs', $fields);
+        $node->logs_enabled = FALSE;
+          $node->logs_available = FALSE;
         }
         break;
       }
@@ -232,7 +244,11 @@ function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
           'logs_available' => $node->logs_available,
           'site_nid' => $node->nid,
           );
+        //$x =
         drupal_write_record('hosting_logs', $fields, 'site_nid');
+        //if($x==1){dsm("NEW");}elseif ($x==2){dsm("UPDA");}else{dsm("huh?");}
+        dsm('updated'.$node->nid);
+        dsm($node);dsm($fields);
         break;
       }
       default:
