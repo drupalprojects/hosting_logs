@@ -218,10 +218,13 @@ function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
 
     switch ($op) {
       case 'load':{
-        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
-        while ($data = db_fetch_object($result)) {
-          $node->logs_enabled = $data->logs_enabled;
-          $node->logs_available = $data->logs_available;
+
+        if(!(isset($node->logs_enabled) && isset($node->logs_available))){
+          $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
+          while ($data = db_fetch_object($result)) {
+            $node->logs_enabled = $data->logs_enabled;
+            $node->logs_available = $data->logs_available;
+          }
         }
         if(!(isset($node->logs_enabled) && isset($node->logs_available))){
           $fields = array(
