@@ -105,11 +105,16 @@ function hosting_logs_page_dblog($node) {
     $dsn = "{$dsn};port={$connection_data->port}";
   }
 
+  if (empty($node->db_name)) {
+    return t("Please verify this site first to prepare some settings");
+  }
 
-  $db_name = hosting_logs_suggest_db_name($node->title, $dsn, urlencode($connection_data->db_user), urlencode($connection_data->db_passwd)); // database name to which you want to connect
+  if (!hosting_logs_database_exists($node->db_name, $dsn, $connection_data->db_user, $connection_data->db_passwd)) {
+    return t('Site database unavailable. You could try a verify task on the site.');
+  }
 
   //Add database name to url connection
-  $db_url_new .= '/'. $db_name;
+  $db_url_new .= '/'. $node->db_name;
 
   //Connect to BD for get Data
   global $active_db, $db_url;
@@ -152,24 +157,6 @@ function hosting_logs_page_dblog($node) {
   return $message;
 }
 
-
-/**
- * Check the name database for a specific site
- */
-function hosting_logs_suggest_db_name($uri, $dsn, $user, $pass) {
-  $suggest_base = substr(str_replace(array('.', '-'), '' , preg_replace('/^www\./', '', $uri)), 0, 16);
-
-  if (!hosting_logs_database_exists($suggest_base, $dsn, $user, $pass)) {
-    return $suggest_base;
-  }
-
-  for ($i = 0; $i < 100; $i++) {
-    $option = sprintf("%s_%d", substr($suggest_base, 0, 15 - strlen( (string) $i) ), $i);
-    if (!hosting_logs_database_exists($option, $dsn, $user, $pass)) {
-      return $option;
-    }
-  }
-}
 
 /**
  * Check if one database exists
