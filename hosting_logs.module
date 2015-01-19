@@ -1,14 +1,19 @@
 <?php
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_logs_perm() {
-  return array('access hosting logs');
+function hosting_logs_permission() {
+  return array(
+    'access hosting logs' => array(
+      'title' => t('access hosting logs'),
+      'description' => t('TODO Add a description for \'access hosting logs\''),
+    ),
+  );
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_logs_menu() {
 
@@ -52,7 +57,8 @@ function hosting_logs_menu_access($node) {
   // Only allow for site nodes
   if (!$node || ($node->type != 'site')) {
     return FALSE;
-  } else {
+  }
+  else {
     return TRUE;
   }
 }
@@ -70,12 +76,13 @@ function hosting_logs_page_error($node) {
 
   $output = file_get_contents($path_to_log);
 
-  if (empty($output) && file_exists($path_to_log)){
+  if (empty($output) && file_exists($path_to_log)) {
     $output = t('The log file is empty.');
   }
   elseif (empty($output)) {
     $output = t('Cannot access log file at %path.', array('%path' => $path_to_log));
-  } else {
+  }
+  else {
     $rows = array();
     $lines = array_reverse(explode("\n", $output));
     foreach ($lines as $line) {
@@ -84,7 +91,7 @@ function hosting_logs_page_error($node) {
       $rows[] = $row;
     }
     $headers = array(t('Time'), t('Type'), t('Client'), t('Errors'));
-    $output = theme('table', $headers, $rows);
+    $output = theme('table', array('header' => $headers, 'rows' => $rows));
 
   }
   return $output;
@@ -98,10 +105,10 @@ function hosting_logs_page_dblog($node) {
   $connection_data = $db_node->services['db'];
   $db_url_new = $connection_data->type . '://' . urlencode($connection_data->db_user) . ':' . urlencode($connection_data->db_passwd) . '@' . $db_node->title;
 
-  $dsn = sprintf("%s:host=%s", $connection_data->type,  $db_node->ip_addresses[0]);
+  $dsn = sprintf("%s:host=%s", $connection_data->type,   $db_node->ip_addresses[0]);
 
   if ($connection_data->has_port) {
-    $db_url_new .= ':'. $connection_data->port;
+    $db_url_new .= ':' . $connection_data->port;
     $dsn = "{$dsn};port={$connection_data->port}";
   }
 
@@ -114,7 +121,7 @@ function hosting_logs_page_dblog($node) {
   }
 
   //Add database name to url connection
-  $db_url_new .= '/'. $node->db_name;
+  $db_url_new .= '/' . $node->db_name;
 
   //Connect to BD for get Data
   global $active_db, $db_url;
@@ -123,7 +130,7 @@ function hosting_logs_page_dblog($node) {
   $active_db = db_connect($db_url_new);
 
   //First check if is enable database loggin
-  if (db_result(db_query("SELECT status FROM {system} WHERE name='dblog'"))) {
+  if (db_query("SELECT status FROM {system} WHERE name = :name", array(':name' => 'dblog'))->fetchField()) {
     $header = array();
     $data = array();
     $result = db_query("DESCRIBE {watchdog}");
@@ -139,13 +146,14 @@ function hosting_logs_page_dblog($node) {
       $item['variables'] = print_r(unserialize($item['variables']), 1);
 
       //Remove domain location
-      $item['location'] = str_replace('http://'. $node->title, '', $item['location']);
+      $item['location'] = str_replace('http://' . $node->title, '', $item['location']);
       $data[] = $item;
     }
 
     //Enable aegir database
     $active_db = $old_connect;
-    $message = theme('table', $header, $data);
+    $message = theme('table', array('header' => $header, 'rows' => $data));
+    // TODO Please change this theme call to use an associative array for the $variables parameter.
     $message .= theme('pager');
   }
   else {
@@ -162,7 +170,7 @@ function hosting_logs_page_dblog($node) {
  * Check if one database exists
  */
 function hosting_logs_database_exists($name, $dsn, $user, $pass) {
- $dsn = $dsn . ';dbname=' . $name;
+  $dsn = $dsn . ';dbname=' . $name;
   try {
     // Try to connect to the DB to test if it exists.
     $conn = new PDO($dsn, $user, $pass);
@@ -180,81 +188,65 @@ function hosting_logs_database_exists($name, $dsn, $user, $pass) {
  *
  * Allows a site to turn it's error logs on and off.
  */
-function hosting_logs_form_site_node_form_alter(&$form){
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function hosting_logs_form_site_node_form_alter(&$form) {
   $node = $form['#node'];
   $form['logs_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Save server errors to /var/aegir/logs/!name', array('!name' => $node->title)),
     '#default_value' => $node->logs_enabled,
-    );
+  );
   $form['logs_available'] = array(
     '#type' => 'checkbox',
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
     '#default_value' => $node->logs_available,
-    );
+  );
   return $form;
-  }
+}
 
 /**
- * Implementation of hook_nodeapi().
+ * Implements hook_nodeapi().
  *
  */
-function hosting_logs_nodeapi(&$node, $op, $arg = NULL) {
-  if ($node->type == 'site'){
+function hosting_logs_nodeapi_OLD(&$node, $op, $arg = NULL) {
+  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
+  if ($node->type == 'site') {
 
     switch ($op) {
-      case 'load':{
+      case 'load':
 
-        if(!(isset($node->logs_enabled) && isset($node->logs_available))){
-          $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = %d', $node->nid);
+        if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
+          $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = :h.site_nid', array(':h.site_nid' => $node->nid));
           while ($data = db_fetch_object($result)) {
             $node->logs_enabled = $data->logs_enabled;
             $node->logs_available = $data->logs_available;
           }
         }
-        if(!(isset($node->logs_enabled) && isset($node->logs_available))){
+        if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
           $fields = array(
             'logs_enabled' => FALSE,
             'logs_available' => FALSE,
             'site_nid' => $node->nid,
-            );
+          );
           drupal_write_record('hosting_logs', $fields);
           $node->logs_enabled = FALSE;
           $node->logs_available = FALSE;
         }
         break;
-      }
-      case 'insert':
-      case 'update':{
-        $fields = array(
-          'logs_enabled' => $node->logs_enabled,
-          'logs_available' => $node->logs_available,
-          'site_nid' => $node->nid,
-          );
-        drupal_write_record('hosting_logs', $fields, 'site_nid');
-        break;
-      }
-      default:
-      break;
     }
+    case 'insert':
+    case 'update':
+      $fields = array(
+        'logs_enabled' => $node->logs_enabled,
+        'logs_available' => $node->logs_available,
+        'site_nid' => $node->nid,
+      );
+      drupal_write_record('hosting_logs', $fields, 'site_nid');
+      break;
   }
-}
-
-
-/**
- * Helper to get the link to the error logs.
- */
-function hosting_logs_errors_link($node, $return = 'html'){
-  if (!empty($node->nid)) {
-    $link = _hosting_site_url($node);
-  } else {
-    $link = "http://www.example.com";
-  }
-
-  $link .= '/error.log';
-  if ($return == 'html'){
-    return l($link, $link, array());
-  } elseif ($return = 'url'){
-    return $link;
-  }
+  default:
+    break;
 }
