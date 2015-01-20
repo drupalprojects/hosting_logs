@@ -208,45 +208,107 @@ function hosting_logs_form_site_node_form_alter(&$form) {
 }
 
 /**
- * Implements hook_nodeapi().
- *
+ * Implements hook_node_load().
  */
-function hosting_logs_nodeapi_OLD(&$node, $op, $arg = NULL) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
-  if ($node->type == 'site') {
-
-    switch ($op) {
-      case 'load':
-
-        if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
-          $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = :h.site_nid', array(':h.site_nid' => $node->nid));
-          while ($data = db_fetch_object($result)) {
-            $node->logs_enabled = $data->logs_enabled;
-            $node->logs_available = $data->logs_available;
-          }
+function hosting_logs_node_load($nodes, $types) {
+  foreach ($nodes as $node) {
+    if ($node->type == 'site') {
+      if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
+        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = :site_nid',
+          array(':site_nid' => $node->nid)
+        );
+        while ($data = $result->fetchObject()) {
+          $node->logs_enabled = $data->logs_enabled;
+          $node->logs_available = $data->logs_available;
         }
-        if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
-          $fields = array(
-            'logs_enabled' => FALSE,
-            'logs_available' => FALSE,
-            'site_nid' => $node->nid,
-          );
-          drupal_write_record('hosting_logs', $fields);
-          $node->logs_enabled = FALSE;
-          $node->logs_available = FALSE;
-        }
-        break;
+      }
+      if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
+        $fields = array(
+          'logs_enabled' => FALSE,
+          'logs_available' => FALSE,
+          'site_nid' => $node->nid,
+        );
+        drupal_write_record('hosting_logs', $fields);
+        $node->logs_enabled = FALSE;
+        $node->logs_available = FALSE;
+      }
     }
-    case 'insert':
-    case 'update':
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function hosting_logs_node_insert($node) {
+  if ($node->type == 'site') {
       $fields = array(
         'logs_enabled' => $node->logs_enabled,
         'logs_available' => $node->logs_available,
         'site_nid' => $node->nid,
       );
       drupal_write_record('hosting_logs', $fields, 'site_nid');
-      break;
   }
-  default:
-    break;
 }
+
+/**
+ * Implements hook_node_insert().
+ */
+function hosting_logs_node_update($node) {
+  if ($node->type == 'site') {
+    if (empty($node->logs_enabled) || empty($node->logs_available)) {
+      _hosting_logs_node_load_defaults($node);
+    }
+
+    db_merge('hosting_logs')
+      ->key(array('site_nid' => $node->nid))
+      ->fields(array(
+        'logs_enabled' => $node->logs_enabled,
+        'logs_available' => $node->logs_available,
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hosting_logs_node_delete($node) {
+  if ($node->type == 'site') {
+    db_delete('hosting_logs')
+      ->condition('site_nid', $node->nid)
+      ->execute();
+
+  }
+}
+
+/**
+ * Private function to initialize default values for a node object.
+ */
+function _hosting_logs_node_load_defaults(&$node) {
+  if (!isset($node->logs_enabled)) {
+    $node->logs_enabled = FALSE;
+  }
+
+  if (!isset($node->logs_available)) {
+    $node->logs_available = FALSE;
+  }
+}
+
+/**
+ * Helper to get the link to the error logs.
+ */
+function hosting_logs_errors_link($node, $return = 'html') {
+  if (!empty($node->nid)) {
+    $link = _hosting_site_url($node);
+  } else {
+    $link = "http://www.example.com";
+  }
+
+  $link .= '/error.log';
+  if ($return == 'html'){
+    return l($link, $link, array());
+  } elseif ($return = 'url'){
+    return $link;
+  }
+}
+
