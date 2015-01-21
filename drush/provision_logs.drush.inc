@@ -35,24 +35,21 @@ function drush_provision_logs_pre_provision_verify() {
 function drush_provision_logs_pre_hosting_task() {
 
   $task =& drush_get_context('HOSTING_TASK');
-    drush_log('drush_provision_logs_pre_hosting_task', 'ok');
 
-  // Verify Platform
-  // For our platforms, we have to clone it if it has a git_remote
-  // If it has a git branch, we should checkout as well.
+  // Verify site
   if ($task->ref->type == 'site' && $task->task_type == 'verify') {
-    drush_log('site being verified LOGS', 'ok');
     $task->options['logs_enabled'] = $task->ref->logs_enabled;
     $task->options['logs_available'] = $task->ref->logs_available;
   }
 }
+
 /**
  * Implements hook_provision_apache_vhost_config()
  *
  * Sets each site's error log to be at /var/aegir/logs/$uri.error.log
- * Makes http://$uri/errors available through the browser.
  *
- * @TODO: Provide a way for sites to say they want the web-accessible alias or not
+ * Optionally makes http://$uri/errors available through the provisioned site itself.
+ * WARNING: This currently has no form of authentication.
  */
 function provision_logs_provision_apache_vhost_config($uri, $data) {
   $log_file_path = drush_get_option('provision_logs_file_path', '/var/aegir/logs');
