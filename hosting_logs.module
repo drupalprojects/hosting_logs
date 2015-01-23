@@ -101,17 +101,15 @@ function hosting_logs_page_error($node) {
  * Page callback for dblog
  */
 function hosting_logs_page_dblog($node) {
+
   $db_node = node_load($node->db_server);
   $connection_data = $db_node->services['db'];
-  $db_url_new = $connection_data->type . '://' . urlencode($connection_data->db_user) . ':' . urlencode($connection_data->db_passwd) . '@' . $db_node->title;
 
-  $dsn = sprintf("%s:host=%s", $connection_data->type,   $db_node->ip_addresses[0]);
-
+  $host = reset($db_node->ip_addresses);
+  $dsn = sprintf("%s:host=%s", $connection_data->type, $host);
   if ($connection_data->has_port) {
-    $db_url_new .= ':' . $connection_data->port;
     $dsn = "{$dsn};port={$connection_data->port}";
   }
-
   if (empty($node->db_name)) {
     return t("Please verify this site first to prepare some settings");
   }
@@ -120,29 +118,41 @@ function hosting_logs_page_dblog($node) {
     return t('Site database unavailable. You could try a verify task on the site.');
   }
 
-  //Add database name to url connection
-  $db_url_new .= '/' . $node->db_name;
+  global $databases;
+  // Inject target site
+  $databases['target_site']['default'] = array(
+    'driver' => 'mysql',
+    'database' => $db_node->title,
+    'username' => $connection_data->db_user,
+    'password' => $connection_data->db_passwd,
+    'host' => $host,
+  );
 
-  //Connect to BD for get Data
-  global $active_db, $db_url;
+  db_set_active('target_site');
 
-  $old_connect = $active_db;
-  $active_db = db_connect($db_url_new);
-
-  //First check if is enable database loggin
+  // Check for enabled database log module.
   if (db_query("SELECT status FROM {system} WHERE name = :name", array(':name' => 'dblog'))->fetchField()) {
     $header = array();
     $data = array();
     $result = db_query("DESCRIBE {watchdog}");
 
-    while ($item = db_fetch_object($result)) {
+    foreach ($result as $item) {
       $header[] = $item->Field;
     }
 
-    $result = pager_query("SELECT * FROM {watchdog} ORDER BY wid DESC", 100);
+    //$result = pager_query("SELECT * FROM {watchdog} ORDER BY wid DESC", 100);
+    $query = db_select('watchdog', 'w')
+      ->extend('PagerDefault')
+      ->limit(100)
+      ->fields('w')
+      ;
+    $query
+      ->orderBy('w.wid', 'DESC')
+        ;
+    $result = $query->execute();
 
-    while ($item = db_fetch_array($result)) {
-      //Unserialize data for varialbes
+    foreach ($result as $row) {
+      $item = (array) $row;
       $item['variables'] = print_r(unserialize($item['variables']), 1);
 
       //Remove domain location
@@ -150,15 +160,15 @@ function hosting_logs_page_dblog($node) {
       $data[] = $item;
     }
 
-    //Enable aegir database
-    $active_db = $old_connect;
+    db_set_active('default');
+
     $message = theme('table', array('header' => $header, 'rows' => $data));
     // TODO Please change this theme call to use an associative array for the $variables parameter.
     $message .= theme('pager');
   }
   else {
-    //Enable aegir database
-    $active_db = $old_connect;
+    db_set_active('default');
+
     $message = t('This site isn\'t enable database loggin module');
   }
 
