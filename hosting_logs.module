@@ -125,14 +125,15 @@ function hosting_logs_page_dblog($node) {
   global $databases;
 
   // Inject target site.
-  $databases['target_site']['default'] = array(
+  $target_db = array(
     'driver' => 'mysql',
-    'database' => $db_node->title,
+    'database' => $node->db_name,
     'username' => $connection_data->db_user,
     'password' => $connection_data->db_passwd,
     'host' => $host,
   );
 
+  Database::addConnectionInfo('target_site', 'default', $target_db);
   db_set_active('target_site');
 
   // Check for enabled database log module.
