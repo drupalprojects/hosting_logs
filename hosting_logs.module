@@ -1,13 +1,17 @@
 <?php
 
 /**
+ * @file
+ * Hosting logs module code
+ */
+
+/**
  * Implements hook_permission().
  */
 function hosting_logs_permission() {
   return array(
     'access hosting logs' => array(
       'title' => t('access hosting logs'),
-      'description' => t('TODO Add a description for \'access hosting logs\''),
     ),
   );
 }
@@ -44,7 +48,7 @@ function hosting_logs_menu() {
 }
 
 /**
- * The access callback for the Logs tab
+ * The access callback for the Logs tab.
  *
  * Make sure user has perms to veiw and and also that the node we are
  * viewing is a platform node.
@@ -54,7 +58,7 @@ function hosting_logs_menu_access($node) {
     return FALSE;
   }
 
-  // Only allow for site nodes
+  // Only allow for site nodes.
   if (!$node || ($node->type != 'site')) {
     return FALSE;
   }
@@ -64,7 +68,7 @@ function hosting_logs_menu_access($node) {
 }
 
 /**
- * Page callback for error log
+ * Page callback for error log.
  */
 function hosting_logs_page_error($node) {
   $uri = $node->title;
@@ -74,13 +78,13 @@ function hosting_logs_page_error($node) {
 
   $path_to_log = "$log_file_path/$uri.error.log";
 
-  $output = file_get_contents($path_to_log);
+  $output = @file_get_contents($path_to_log);
 
   if (empty($output) && file_exists($path_to_log)) {
     $output = t('The log file is empty.');
   }
   elseif (empty($output)) {
-    $output = t('Cannot access log file at %path.', array('%path' => $path_to_log));
+    $output = t('Cannot access log file at %path. Did you verify this site after installing the hosting_logs module?', array('%path' => $path_to_log));
   }
   else {
     $rows = array();
@@ -98,7 +102,7 @@ function hosting_logs_page_error($node) {
 }
 
 /**
- * Page callback for dblog
+ * Page callback for dblog.
  */
 function hosting_logs_page_dblog($node) {
 
@@ -119,7 +123,8 @@ function hosting_logs_page_dblog($node) {
   }
 
   global $databases;
-  // Inject target site
+
+  // Inject target site.
   $databases['target_site']['default'] = array(
     'driver' => 'mysql',
     'database' => $db_node->title,
@@ -140,22 +145,19 @@ function hosting_logs_page_dblog($node) {
       $header[] = $item->Field;
     }
 
-    //$result = pager_query("SELECT * FROM {watchdog} ORDER BY wid DESC", 100);
     $query = db_select('watchdog', 'w')
       ->extend('PagerDefault')
       ->limit(100)
       ->fields('w')
-      ;
-    $query
-      ->orderBy('w.wid', 'DESC')
-        ;
+      ->orderBy('w.wid', 'DESC');
+
     $result = $query->execute();
 
     foreach ($result as $row) {
       $item = (array) $row;
       $item['variables'] = print_r(unserialize($item['variables']), 1);
 
-      //Remove domain location
+      // Remove domain location.
       $item['location'] = str_replace('http://' . $node->title, '', $item['location']);
       $data[] = $item;
     }
@@ -169,7 +171,7 @@ function hosting_logs_page_dblog($node) {
   else {
     db_set_active('default');
 
-    $message = t('This site isn\'t enable database loggin module');
+    $message = t('The dblog module is not enabled in this site.');
   }
 
   return $message;
@@ -177,7 +179,7 @@ function hosting_logs_page_dblog($node) {
 
 
 /**
- * Check if one database exists
+ * Check if one database exists.
  */
 function hosting_logs_database_exists($name, $dsn, $user, $pass) {
   $dsn = $dsn . ';dbname=' . $name;
@@ -193,14 +195,10 @@ function hosting_logs_database_exists($name, $dsn, $user, $pass) {
   }
 }
 
-/*
- * Implements hook_form_alter() for site-node-form
- *
- * Allows a site to turn it's error logs on and off.
- */
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Allows a site to turn it's error logs on and off.
+ *
+ * Implements hook_form_alter() for site-node-form
  */
 function hosting_logs_form_site_node_form_alter(&$form) {
   $node = $form['#node'];
@@ -251,12 +249,12 @@ function hosting_logs_node_load($nodes, $types) {
  */
 function hosting_logs_node_insert($node) {
   if ($node->type == 'site') {
-      $fields = array(
-        'logs_enabled' => $node->logs_enabled,
-        'logs_available' => $node->logs_available,
-        'site_nid' => $node->nid,
-      );
-      drupal_write_record('hosting_logs', $fields, 'site_nid');
+    $fields = array(
+      'logs_enabled' => $node->logs_enabled,
+      'logs_available' => $node->logs_available,
+      'site_nid' => $node->nid,
+    );
+    drupal_write_record('hosting_logs', $fields, 'site_nid');
   }
 }
 
@@ -310,15 +308,16 @@ function _hosting_logs_node_load_defaults(&$node) {
 function hosting_logs_errors_link($node, $return = 'html') {
   if (!empty($node->nid)) {
     $link = _hosting_site_url($node);
-  } else {
+  }
+  else {
     $link = "http://www.example.com";
   }
 
   $link .= '/error.log';
-  if ($return == 'html'){
+  if ($return == 'html') {
     return l($link, $link, array());
-  } elseif ($return = 'url'){
+  }
+  elseif ($return = 'url') {
     return $link;
   }
 }
-
