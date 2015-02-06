@@ -21,39 +21,61 @@ function hosting_logs_permission() {
  */
 function hosting_logs_menu() {
 
-  $items['node/%node/logs/error'] = array(
-    'title' => 'Error Log',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-
   $items['node/%node/logs'] = array(
     'title' => 'Logs',
-    'description' => 'View apache error logs.',
+    'access callback' => 'user_access',
+    'access arguments' => array('access hosting logs'),
     'page callback' => 'hosting_logs_page_error',
     'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
-    'access callback' => 'hosting_logs_menu_access',
-    'access arguments' => array(1),
   );
+
+  $items['node/%node/logs/error'] = array(
+    'title' => 'Error Log',
+    'description' => 'View apache error logs.',
+    'page callback' => 'hosting_logs_page_error',
+    'page arguments' => array(1),
+    'access callback' => 'hosting_logs_error_menu_access',
+    'access arguments' => array(1),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
   $items['node/%node/logs/dblog'] = array(
     'title' => 'Watchdog',
     'description' => 'View watchdog logs for this site.',
     'page callback' => 'hosting_logs_page_dblog',
     'page arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-    'access callback' => 'hosting_logs_menu_access',
+    'access callback' => 'hosting_logs_dblog_menu_access',
     'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
 
 /**
- * The access callback for the Logs tab.
+ * The access callback for the Logs - Error log tab.
  *
- * Make sure user has perms to veiw and and also that the node we are
+ * Make sure user has perms to view and and also that the node we are
  * viewing is a platform node.
  */
-function hosting_logs_menu_access($node) {
+function hosting_logs_error_menu_access($node) {
+  if (!user_access('access hosting logs')) {
+    return FALSE;
+  }
+
+  // Only allow for site nodes with logs_enabled.
+  if (is_object($node) && $node->type == 'site' && $node->logs_enabled) {
+    return TRUE;
+  }
+}
+
+/**
+ * The access callback for the Logs - Watchdog tab.
+ *
+ * Make sure user has perms to view and and also that the node we are
+ * viewing is a platform node.
+ */
+function hosting_logs_dblog_menu_access($node) {
   if (!user_access('access hosting logs')) {
     return FALSE;
   }
@@ -166,7 +188,6 @@ function hosting_logs_page_dblog($node) {
     db_set_active('default');
 
     $message = theme('table', array('header' => $header, 'rows' => $data));
-    // TODO Please change this theme call to use an associative array for the $variables parameter.
     $message .= theme('pager');
   }
   else {
