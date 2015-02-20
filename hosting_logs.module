@@ -23,9 +23,9 @@ function hosting_logs_menu() {
 
   $items['node/%node/logs'] = array(
     'title' => 'Logs',
-    'access callback' => 'user_access',
-    'access arguments' => array('access hosting logs'),
-    'page callback' => 'hosting_logs_page_error',
+    'access callback' => 'hosting_logs_default_menu_access',
+    'access arguments' => array(1),
+    'page callback' => 'hosting_logs_page_default',
     'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
@@ -37,7 +37,7 @@ function hosting_logs_menu() {
     'page arguments' => array(1),
     'access callback' => 'hosting_logs_error_menu_access',
     'access arguments' => array(1),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => module_exists('hosting_logs_git') ? MENU_LOCAL_TASK : MENU_DEFAULT_LOCAL_TASK,
   );
 
   $items['node/%node/logs/dblog'] = array(
@@ -53,10 +53,33 @@ function hosting_logs_menu() {
 }
 
 /**
+ * The access callback for the Logs - Default tab.
+ *
+ * Make sure user has perms to view and and also consider the node type.
+ */
+function hosting_logs_default_menu_access($node) {
+  if (!user_access('access hosting logs')) {
+    return FALSE;
+  }
+
+  // Only show on platforms if the hosting_logs_git sub-module is enabled.
+  if ($node->type == 'platform') {
+    if (module_exists('hosting_logs_git')) {
+      return hosting_logs_git_page($node);
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  return hosting_logs_error_menu_access($node);
+}
+
+/**
  * The access callback for the Logs - Error log tab.
  *
  * Make sure user has perms to view and and also that the node we are
- * viewing is a platform node.
+ * viewing is a site node.
  */
 function hosting_logs_error_menu_access($node) {
   if (!user_access('access hosting logs')) {
@@ -73,7 +96,7 @@ function hosting_logs_error_menu_access($node) {
  * The access callback for the Logs - Watchdog tab.
  *
  * Make sure user has perms to view and and also that the node we are
- * viewing is a platform node.
+ * viewing is a site node.
  */
 function hosting_logs_dblog_menu_access($node) {
   if (!user_access('access hosting logs')) {
@@ -86,6 +109,18 @@ function hosting_logs_dblog_menu_access($node) {
   }
   else {
     return TRUE;
+  }
+}
+
+/**
+ * Page callback for default node/42/logs.
+ */
+function hosting_logs_page_default($node) {
+  if ($node->type == 'platform') {
+    return hosting_logs_git_page($node);
+  }
+  else {
+    return hosting_logs_page_error($node);
   }
 }
 
