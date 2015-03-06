@@ -62,17 +62,27 @@ function hosting_logs_default_menu_access($node) {
     return FALSE;
   }
 
+  // Nothing to show until verified.
+  if ($node->verified == 0) {
+    return FALSE;
+  }
+
   // Only show on platforms if the hosting_logs_git sub-module is enabled.
   if ($node->type == 'platform') {
     if (module_exists('hosting_logs_git')) {
-      return hosting_logs_git_page($node);
+      return hosting_logs_git_menu_access($node);
     }
     else {
       return FALSE;
     }
   }
 
-  return hosting_logs_error_menu_access($node);
+  if (hosting_logs_error_menu_access($node)) {
+    return TRUE;
+  }
+  else {
+    return hosting_logs_dblog_menu_access($node);
+  }
 }
 
 /**
@@ -119,8 +129,11 @@ function hosting_logs_page_default($node) {
   if ($node->type == 'platform') {
     return hosting_logs_git_page($node);
   }
-  else {
+  elseif ($node->logs_enabled) {
     return hosting_logs_page_error($node);
+  }
+  else {
+    return hosting_logs_page_dblog($node);
   }
 }
 

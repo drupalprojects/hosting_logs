@@ -44,14 +44,17 @@ function hosting_logs_git_menu_access($node) {
     return FALSE;
   }
 
-  // Only allow for site nodes.
-  if (!$node || ($node->type != 'site' && $node->type != 'platform')) {
+  if (!$node
+    || ($node->type != 'site' && $node->type != 'platform')
+    || $node->verified == 0
+    || empty($node->git['repo_url'])) {
     return FALSE;
   }
   else {
     return TRUE;
   }
 }
+
 /**
  * Return output from "git log" for this site or platform.
  */
