@@ -12,10 +12,10 @@
 /**
  * Implements drush_hook_pre_COMMAND()
  *
- * Creates the /var/aegir/logs folder if it does not exist.
+ * Creates the /var/log/aegir folder if it does not exist.
  */
 function drush_provision_logs_pre_provision_verify() {
-  $log_path = drush_get_option('provision_logs_path', '/var/aegir/logs');
+  $log_path = drush_get_option('provision_logs_path', '/var/log/aegir');
   if (!file_exists($log_path)){
     mkdir($log_path, 0775);
   }
@@ -52,7 +52,7 @@ function drush_provision_logs_pre_hosting_task() {
  * WARNING: This currently has no form of authentication.
  */
 function provision_logs_provision_apache_vhost_config($uri, $data) {
-  $log_file_path = drush_get_option('provision_logs_file_path', '/var/aegir/logs');
+  $log_file_path = drush_get_option('provision_logs_file_path', '/var/log/aegir');
   $log_url_path = drush_get_option('provision_logs_url_path', 'error.log');
   
   $logs_enabled = drush_get_option('logs_enabled', TRUE);

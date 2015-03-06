@@ -143,7 +143,7 @@ function hosting_logs_page_default($node) {
 function hosting_logs_page_error($node) {
   $uri = $node->title;
 
-  $log_file_path = variable_get('provision_logs_file_path', '/var/aegir/logs');
+  $log_file_path = variable_get('provision_logs_file_path', '/var/log/aegir');
   $log_url_path = variable_get('provision_logs_url_path', 'error.log');
 
   $path_to_log = "$log_file_path/$uri.error.log";
@@ -274,7 +274,7 @@ function hosting_logs_form_site_node_form_alter(&$form) {
   $node = $form['#node'];
   $form['logs_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Save server errors to /var/aegir/logs/!name', array('!name' => $node->title)),
+    '#title' => t('Save server errors to !path/!name', array('!path' => variable_get('provision_logs_file_path', '/var/log/aegir'), '!name' => $node->title)),
     '#default_value' => isset($node->logs_enabled) ? $node->logs_enabled : FALSE,
   );
   $form['logs_available'] = array(
