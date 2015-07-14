@@ -63,7 +63,7 @@ function hosting_logs_default_menu_access($node) {
   }
 
   // Nothing to show until verified.
-  if ($node->verified == 0) {
+  if (!isset($node->verified) || $node->verified == 0) {
     return FALSE;
   }
 
