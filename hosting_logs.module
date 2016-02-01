@@ -272,6 +272,8 @@ function hosting_logs_database_exists($name, $dsn, $user, $pass) {
  */
 function hosting_logs_form_site_node_form_alter(&$form) {
   $node = $form['#node'];
+  _hosting_logs_node_load_defaults($node);
+
   $form['logs_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Save server errors to !path/!name',
@@ -279,17 +281,17 @@ function hosting_logs_form_site_node_form_alter(&$form) {
         '!path' => variable_get('provision_logs_file_path', '/var/log/aegir'),
         '!name' => $node->title)
     ),
-    '#default_value' => isset($node->logs_enabled) ? $node->logs_enabled : FALSE,
+    '#default_value' => $node->logs_enabled,
   );
   $form['logs_available'] = array(
     '#type' => 'checkbox',
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
-    '#default_value' => isset($node->logs_available) ? $node->logs_available : FALSE,
+    '#default_value' => $node->logs_available,
   );
   $form['logs_visible'] = array(
     '#type' => 'checkbox',
     '#title' => t('Output errors directly to the page. <em>WARNING: This outputs PHP errors directly to requested pages instead of serving up HTTP 500 response. Use with caution. </em>'),
-    '#default_value' => isset($node->logs_visible) ? $node->logs_visible : FALSE,
+    '#default_value' => $node->logs_visible,
   );
   return $form;
 }
@@ -334,9 +336,7 @@ function hosting_logs_node_insert($node) {
  */
 function hosting_logs_node_update($node) {
   if ($node->type == 'site') {
-    if (empty($node->logs_enabled) || empty($node->logs_available) || empty($node->logs_visible)) {
-      _hosting_logs_node_load_defaults($node);
-    }
+    _hosting_logs_node_load_defaults($node);
 
     db_merge('hosting_logs')
       ->key(array('site_nid' => $node->nid))
