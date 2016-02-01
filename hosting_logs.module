@@ -286,6 +286,11 @@ function hosting_logs_form_site_node_form_alter(&$form) {
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
     '#default_value' => isset($node->logs_available) ? $node->logs_available : FALSE,
   );
+  $form['logs_visible'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Output errors directly to the page. <em>WARNING: This outputs PHP errors directly to requested pages instead of serving up HTTP 500 response. Use with caution. </em>'),
+    '#default_value' => isset($node->logs_visible) ? $node->logs_visible : FALSE,
+  );
   return $form;
 }
 
@@ -293,28 +298,19 @@ function hosting_logs_form_site_node_form_alter(&$form) {
  * Implements hook_node_load().
  */
 function hosting_logs_node_load($nodes, $types) {
-  foreach ($nodes as $node) {
-    if ($node->type == 'site') {
-      if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
-        $result = db_query('SELECT h.logs_enabled, h.logs_available, h.site_nid FROM {hosting_logs} h WHERE h.site_nid = :site_nid',
-          array(':site_nid' => $node->nid)
-        );
-        while ($data = $result->fetchObject()) {
-          $node->logs_enabled = $data->logs_enabled;
-          $node->logs_available = $data->logs_available;
-        }
-      }
-      if (!(isset($node->logs_enabled) && isset($node->logs_available))) {
-        $fields = array(
-          'logs_enabled' => FALSE,
-          'logs_available' => FALSE,
-          'site_nid' => $node->nid,
-        );
-        drupal_write_record('hosting_logs', $fields);
-        $node->logs_enabled = FALSE;
-        $node->logs_available = FALSE;
-      }
-    }
+  // Only operate on sites.
+  if (!in_array('site', $types)) {
+    return;
+  }
+
+  // Load all hosting_logs data where site_nid is in our nodes to load.
+  $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid IN(:nids)', array(
+    ':nids' => array_keys($nodes)
+  ));
+  foreach ($result as $record) {
+    $nodes[$record->site_nid]->logs_enabled = $record->logs_enabled;
+    $nodes[$record->site_nid]->logs_available = $record->logs_available;
+    $nodes[$record->site_nid]->logs_visible = $record->logs_visible;
   }
 }
 
@@ -326,6 +322,7 @@ function hosting_logs_node_insert($node) {
     $fields = array(
       'logs_enabled' => $node->logs_enabled,
       'logs_available' => $node->logs_available,
+      'logs_visible' => $node->logs_visible,
       'site_nid' => $node->nid,
     );
     drupal_write_record('hosting_logs', $fields, 'site_nid');
@@ -337,15 +334,16 @@ function hosting_logs_node_insert($node) {
  */
 function hosting_logs_node_update($node) {
   if ($node->type == 'site') {
-    if (empty($node->logs_enabled) || empty($node->logs_available)) {
+    if (empty($node->logs_enabled) || empty($node->logs_available) || empty($node->logs_visible)) {
       _hosting_logs_node_load_defaults($node);
     }
 
     db_merge('hosting_logs')
       ->key(array('site_nid' => $node->nid))
       ->fields(array(
-        'logs_enabled' => $node->logs_enabled,
-        'logs_available' => $node->logs_available,
+        'logs_enabled' => (int) $node->logs_enabled,
+        'logs_available' => (int) $node->logs_available,
+        'logs_visible' => (int) $node->logs_visible,
       ))
       ->execute();
   }
@@ -373,6 +371,10 @@ function _hosting_logs_node_load_defaults(&$node) {
 
   if (!isset($node->logs_available)) {
     $node->logs_available = FALSE;
+  }
+
+  if (!isset($node->logs_visible)) {
+    $node->logs_visible = FALSE;
   }
 }
 

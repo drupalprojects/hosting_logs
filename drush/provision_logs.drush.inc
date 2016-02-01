@@ -40,6 +40,7 @@ function drush_provision_logs_pre_hosting_task() {
   if ($task->ref->type == 'site' && $task->task_type == 'verify') {
     $task->options['logs_enabled'] = $task->ref->logs_enabled;
     $task->options['logs_available'] = $task->ref->logs_available;
+    $task->options['logs_visible'] = $task->ref->logs_visible;
   }
 }
 
@@ -78,4 +79,29 @@ function provision_logs_provision_apache_vhost_config($uri, $data) {
   $vhost[] = "# ==============";
   $vhost[] = "";
   return $vhost;
+}
+
+/**
+ * Implements hook_provision_drupal_config()
+ */
+function provision_logs_provision_drupal_config($uri, $data) {
+  if (drush_get_option('logs_visible', FALSE)) {
+  return <<<PHP
+
+
+  /**
+   * PROVISION_LOGS
+   * This site has "logs_visible" enabled, so errors are being output to the screen.
+   * To change this, edit the site node or the drush alias.
+   */
+
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+  /**
+   * End PROVISION_LOGS
+   */
+
+PHP;
+  }
 }

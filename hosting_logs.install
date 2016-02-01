@@ -49,8 +49,28 @@ function hosting_logs_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
+      'logs_visible' => array(
+        'description' => 'Boolean to indicate if logs are output to the page.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('site_nid'),
   );
   return $schema;
+}
+
+/**
+ * Add logs_visible field.
+ */
+function hosting_logs_update_7000() {
+  db_add_field('hosting_logs', 'logs_visible', array(
+    'description' => 'Boolean to indicate if logs are output to the page.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 1,
+  ));
 }
