@@ -21,26 +21,22 @@ function hosting_logs_permission() {
  */
 function hosting_logs_menu() {
 
-  $items['node/%node/logs'] = array(
-    'title' => 'Logs',
-    'access callback' => 'hosting_logs_default_menu_access',
-    'access arguments' => array(1),
-    'page callback' => 'hosting_logs_page_default',
-    'page arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  $items['node/%node/logs/error'] = array(
-    'title' => 'Error Log',
-    'description' => 'View apache error logs.',
+  $items['node/%node/errors'] = array(
+    'title' => 'Error Logs',
+    'description' => 'View error logs for this site.',
     'page callback' => 'hosting_logs_page_error',
     'page arguments' => array(1),
-    'access callback' => 'hosting_logs_error_menu_access',
+    'access callback' => 'hosting_logs_menu_access',
     'access arguments' => array(1),
-    'type' => module_exists('hosting_logs_git') ? MENU_LOCAL_TASK : MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%node/errors/view'] = array(
+    'title' => 'Error Logs',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10
   );
 
-  $items['node/%node/logs/dblog'] = array(
+  $items['node/%node/errors/dblog'] = array(
     'title' => 'Watchdog',
     'description' => 'View watchdog logs for this site.',
     'page callback' => 'hosting_logs_page_dblog',
