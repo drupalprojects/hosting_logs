@@ -36,15 +36,16 @@ function hosting_logs_menu() {
     'weight' => -10
   );
 
-  $items['node/%node/errors/dblog'] = array(
-    'title' => 'Watchdog',
-    'description' => 'View watchdog logs for this site.',
-    'page callback' => 'hosting_logs_page_dblog',
-    'page arguments' => array(1),
-    'access callback' => 'hosting_logs_dblog_menu_access',
-    'access arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-  );
+  // @TODO: Removed until it really works
+  //  $items['node/%node/errors/dblog'] = array(
+  //    'title' => 'Watchdog',
+  //    'description' => 'View watchdog logs for this site.',
+  //    'page callback' => 'hosting_logs_page_dblog',
+  //    'page arguments' => array(1),
+  //    'type' => MENU_LOCAL_TASK,
+  //    'access callback' => 'hosting_logs_menu_access',
+  //    'access arguments' => array(1),
+  //  );
   return $items;
 }
 
