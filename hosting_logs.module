@@ -154,15 +154,15 @@ function hosting_logs_page_error($node) {
   }
   else {
     $rows = array();
-    $lines = array_reverse(explode("\n", $output));
+    $lines = array_filter(array_reverse(explode("\n", $output)));
     foreach ($lines as $line) {
       $line = str_replace('[', '', $line);
       $row = explode(']', $line);
+      $row[4] = "<div>{$row[4]}</div>";
       $rows[] = $row;
     }
-    $headers = array(t('Time'), t('Type'), t('Client'), t('Errors'));
-    $output = theme('table', array('header' => $headers, 'rows' => $rows));
-
+    $headers = array(t('Time'), t('Type'), '', t('Client'), t('Errors'));
+    $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('table errors-table'))));
   }
   return $output;
 }
