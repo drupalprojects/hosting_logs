@@ -12,29 +12,31 @@ function hosting_logs_perm() {
  */
 function hosting_logs_menu() {
 
-  $items['node/%node/logs/error'] = array(
-    'title' => 'Error Log',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-
-  $items['node/%node/logs'] = array(
-    'title' => 'Logs',
-    'description' => 'View apache error logs.',
+  $items['node/%node/errors'] = array(
+    'title' => 'Error Logs',
+    'description' => 'View error logs for this site.',
     'page callback' => 'hosting_logs_page_error',
     'page arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
     'access callback' => 'hosting_logs_menu_access',
     'access arguments' => array(1),
-  );
-  $items['node/%node/logs/dblog'] = array(
-    'title' => 'Watchdog',
-    'description' => 'View watchdog logs for this site.',
-    'page callback' => 'hosting_logs_page_dblog',
-    'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
-    'access callback' => 'hosting_logs_menu_access',
-    'access arguments' => array(1),
   );
+  $items['node/%node/errors/view'] = array(
+    'title' => 'Error Logs',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10
+  );
+
+  // @TODO: Removed until it really works
+  //  $items['node/%node/errors/dblog'] = array(
+  //    'title' => 'Watchdog',
+  //    'description' => 'View watchdog logs for this site.',
+  //    'page callback' => 'hosting_logs_page_dblog',
+  //    'page arguments' => array(1),
+  //    'type' => MENU_LOCAL_TASK,
+  //    'access callback' => 'hosting_logs_menu_access',
+  //    'access arguments' => array(1),
+  //  );
   return $items;
 }
 
@@ -77,14 +79,15 @@ function hosting_logs_page_error($node) {
     $output = t('Cannot access log file at %path.', array('%path' => $path_to_log));
   } else {
     $rows = array();
-    $lines = array_reverse(explode("\n", $output));
+    $lines = array_filter(array_reverse(explode("\n", $output)));
     foreach ($lines as $line) {
       $line = str_replace('[', '', $line);
       $row = explode(']', $line);
+      $row[4] = "<div>{$row[4]}</div>";
       $rows[] = $row;
     }
-    $headers = array(t('Time'), t('Type'), t('Client'), t('Errors'));
-    $output = theme('table', $headers, $rows);
+    $headers = array(t('Time'), t('Type'), '', t('Client'), t('Errors'));
+    $output = theme('table', $headers, $rows, array('class' => 'table errors-table'));
 
   }
   return $output;
