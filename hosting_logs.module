@@ -26,7 +26,7 @@ function hosting_logs_menu() {
     'description' => 'View error logs for this site.',
     'page callback' => 'hosting_logs_page_error',
     'page arguments' => array(1),
-    'access callback' => 'hosting_logs_menu_access',
+    'access callback' => 'hosting_logs_error_menu_access',
     'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
