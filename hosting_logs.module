@@ -89,12 +89,17 @@ function hosting_logs_default_menu_access($node) {
  * viewing is a site node.
  */
 function hosting_logs_error_menu_access($node) {
+  $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid = :nid', array(
+    ':nid' => $node->nid
+  ));
+
+  $logs = $result->fetch();
   if (!user_access('access hosting logs')) {
     return FALSE;
   }
 
   // Only allow for site nodes with logs_enabled.
-  if (is_object($node) && $node->type == 'site' && $node->logs_enabled) {
+  if (is_object($node) && $node->type == 'site' && $logs->logs_enabled) {
     return TRUE;
   }
 }
@@ -297,6 +302,7 @@ function hosting_logs_form_site_node_form_alter(&$form) {
  * Implements hook_node_load().
  */
 function hosting_logs_node_load($nodes, $types) {
+
   // Only operate on sites.
   if (!in_array('site', $types)) {
     return;
@@ -306,6 +312,7 @@ function hosting_logs_node_load($nodes, $types) {
   $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid IN(:nids)', array(
     ':nids' => array_keys($nodes)
   ));
+
   foreach ($result as $record) {
     $nodes[$record->site_nid]->logs_enabled = $record->logs_enabled;
     $nodes[$record->site_nid]->logs_available = $record->logs_available;
