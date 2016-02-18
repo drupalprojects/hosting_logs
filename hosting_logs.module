@@ -162,19 +162,12 @@ function hosting_logs_page_error($node) {
     $rows = array();
     $lines = array_filter(array_reverse(explode("\n", $output)));
     foreach ($lines as $line) {
-      $line = str_replace('[', '', $line);
-      $line_parts = explode(']', $line);
-
-      $row = array(
-        $line_parts[0],
-        "<div>{$line_parts[4]}</div>",
-        $line_parts[1],
-        $line_parts[2],
-        $line_parts[3],
+      $rows[] = array(
+         check_markup($line, 'plain_text'),
       );
-      $rows[] = $row;
     }
-    $headers = array(t('Time'), t('Errors'),  t('Type'), '', t('Client'));
+
+    $headers = array();  
     $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('table errors-table'))));
   }
   return $output;
