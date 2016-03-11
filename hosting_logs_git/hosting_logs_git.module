@@ -21,12 +21,12 @@ function hosting_logs_git_permission() {
  */
 function hosting_logs_git_menu() {
 
-  $items['node/%node/logs/commits'] = array(
+  $items['node/%node/commits'] = array(
     'title' => 'Git commits',
     'description' => 'View git commit log for this site.',
     'page callback' => 'hosting_logs_git_page',
     'page arguments' => array(1),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK,
     'access callback' => 'hosting_logs_git_menu_access',
     'access arguments' => array(1),
   );
