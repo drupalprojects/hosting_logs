@@ -33,7 +33,7 @@ function hosting_logs_menu() {
   $items['node/%node/errors/view'] = array(
     'title' => 'Error Logs',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10
+    'weight' => -10,
   );
 
   // @TODO: Removed until it really works
@@ -90,7 +90,7 @@ function hosting_logs_default_menu_access($node) {
  */
 function hosting_logs_error_menu_access($node) {
   $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid = :nid', array(
-    ':nid' => $node->nid
+    ':nid' => $node->nid,
   ));
 
   $logs = $result->fetch();
@@ -163,11 +163,11 @@ function hosting_logs_page_error($node) {
     $lines = array_filter(array_reverse(explode("\n", $output)));
     foreach ($lines as $line) {
       $rows[] = array(
-         check_markup($line, 'plain_text'),
+        check_markup($line, 'plain_text'),
       );
     }
 
-    $headers = array();  
+    $headers = array();
     $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('table errors-table'))));
   }
   return $output;
@@ -310,7 +310,7 @@ function hosting_logs_node_load($nodes, $types) {
 
   // Load all hosting_logs data where site_nid is in our nodes to load.
   $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid IN(:nids)', array(
-    ':nids' => array_keys($nodes)
+    ':nids' => array_keys($nodes),
   ));
 
   foreach ($result as $record) {
