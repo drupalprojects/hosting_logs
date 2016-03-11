@@ -163,7 +163,7 @@ function hosting_logs_page_error($node) {
     $lines = array_filter(array_reverse(explode("\n", $output)));
     foreach ($lines as $line) {
       $rows[] = array(
-        check_markup($line, 'plain_text'),
+        check_markup($line),
       );
     }
 
