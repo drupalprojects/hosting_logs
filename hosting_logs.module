@@ -278,12 +278,8 @@ function hosting_logs_form_site_node_form_alter(&$form) {
 
   $form['logs_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Save server errors to !path/!name',
-      array(
-        '!path' => variable_get('provision_logs_file_path', '/var/log/aegir'),
-        '!name' => $node->title)
-    ),
-    '#default_value' => isset($node->logs_enabled) ? $node->logs_enabled : FALSE,
+    '#title' => t('Make error logs available in the front-end.'),
+    '#default_value' => $node->logs_enabled,
   );
   $form['logs_available'] = array(
     '#type' => 'checkbox',
