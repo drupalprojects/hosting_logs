@@ -99,7 +99,9 @@ function hosting_logs_error_menu_access($node) {
   }
 
   // Only allow for site nodes with logs_enabled.
-  if (is_object($node) && $node->type == 'site' && $logs->logs_enabled) {
+  if (is_object($node) && $node->type == 'site'
+    && is_object($logs) && $logs->logs_enabled) {
+
     return TRUE;
   }
 }
