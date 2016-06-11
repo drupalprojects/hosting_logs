@@ -277,18 +277,21 @@ function hosting_logs_database_exists($name, $dsn, $user, $pass) {
 function hosting_logs_form_site_node_form_alter(&$form) {
   $node = $form['#node'];
   _hosting_logs_node_load_defaults($node);
-
-  $form['logs_enabled'] = array(
+  $form['hosting_logs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Log Settings'),
+  );
+  $form['hosting_logs']['logs_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Make error logs available in the front-end.'),
+    '#title' => t('Make error logs available.'),
     '#default_value' => $node->logs_enabled,
   );
-  $form['logs_available'] = array(
+  $form['hosting_logs']['logs_available'] = array(
     '#type' => 'checkbox',
     '#title' => t('Make error logs available at !link', array('!link' => hosting_logs_errors_link($node))),
     '#default_value' => $node->logs_available,
   );
-  $form['logs_visible'] = array(
+  $form['hosting_logs']['logs_visible'] = array(
     '#type' => 'checkbox',
     '#title' => t('Output errors directly to the page. <em>WARNING: This outputs PHP errors directly to requested pages instead of serving up HTTP 500 response. Use with caution. </em>'),
     '#default_value' => isset($node->logs_visible) ? $node->logs_visible : FALSE,
