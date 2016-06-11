@@ -279,7 +279,7 @@ function hosting_logs_form_site_node_form_alter(&$form) {
   _hosting_logs_node_load_defaults($node);
   $form['hosting_logs'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Log Settings'),
+    '#title' => t('Error Logs'),
   );
   $form['hosting_logs']['logs_enabled'] = array(
     '#type' => 'checkbox',
