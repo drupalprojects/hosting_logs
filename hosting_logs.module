@@ -373,7 +373,7 @@ function hosting_logs_node_delete($node) {
  */
 function _hosting_logs_node_load_defaults(&$node) {
   if (!isset($node->logs_enabled)) {
-    $node->logs_enabled = FALSE;
+    $node->logs_enabled = TRUE;
   }
 
   if (!isset($node->logs_available)) {
