@@ -34,7 +34,8 @@ function hosting_logs_hosting_feature() {
       'aegir account manager' => array(
         'access hosting logs',
       ),
-    )
+    ),
+    'enable' => 'hosting_logs_feature_enable_callback',
   );
 
   return $features;

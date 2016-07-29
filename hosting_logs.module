@@ -404,3 +404,10 @@ function hosting_logs_errors_link($node, $return = 'html') {
     return $link;
   }
 }
+
+/**
+ * Callback function to execute on enabling this module's feature.
+ */
+function hosting_logs_feature_enable_callback() {
+  drupal_set_message(t("Please review the README on http://cgit.drupalcode.org/hosting_logs/tree/README for additional installation steps."));
+}
