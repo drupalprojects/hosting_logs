@@ -56,8 +56,8 @@ function provision_logs_provision_apache_vhost_config($uri, $data) {
   $log_file_path = drush_get_option('provision_logs_file_path', '/var/log/aegir');
   $log_url_path = drush_get_option('provision_logs_url_path', 'error.log');
 
-  $logs_enabled = drush_get_option('logs_enabled', TRUE);
-  $logs_available = drush_get_option('logs_available', FALSE);
+  $logs_enabled = d()->logs_enabled;
+  $logs_available = d()->logs_available;
 
   $error_log_path = "$log_file_path/$uri.error.log";
   $vhost = array();
@@ -105,4 +105,31 @@ function provision_logs_provision_drupal_config($uri, $data) {
 
 PHP;
   }
+}
+
+
+/**
+ * Register our directory as a place to find provision classes.
+ */
+function provision_logs_register_autoload() {
+  static $loaded = FALSE;
+  if (!$loaded) {
+    $loaded = TRUE;
+    provision_autoload_register_prefix('Provision_', dirname(__FILE__));
+  }
+}
+
+/**
+ * Implements hook_drush_init().
+ */
+function provision_logs_drush_init() {
+  provision_logs_register_autoload();
+}
+
+/**
+ * Implements hook_provision_services().
+ */
+function provision_logs_provision_services() {
+  provision_logs_register_autoload();
+  return array('logs' => NULL);
 }
