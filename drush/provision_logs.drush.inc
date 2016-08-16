@@ -82,11 +82,11 @@ function provision_logs_provision_apache_vhost_config($uri, $data) {
 }
 
 /**
- * Implements hook_provision_drupal_config()
+ * Implements hook_provision_drupal_config().
  */
 function provision_logs_provision_drupal_config($uri, $data) {
   if (drush_get_option('logs_visible', FALSE)) {
-  return <<<PHP
+    return <<<PHP
 
 
   /**
