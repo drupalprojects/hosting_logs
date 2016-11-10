@@ -283,7 +283,7 @@ function hosting_logs_form_site_node_form_alter(&$form) {
   );
   $form['hosting_logs']['logs_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Make error logs available.'),
+    '#title' => t('Make access and error logs available.'),
     '#default_value' => $node->logs_enabled,
   );
   $form['hosting_logs']['logs_available'] = array(

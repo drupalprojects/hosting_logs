@@ -60,6 +60,7 @@ function provision_logs_provision_apache_vhost_config($uri, $data) {
   $logs_available = d()->logs_available;
 
   $error_log_path = "$log_file_path/$uri.error.log";
+  $access_log_path = "$log_file_path/$uri.access.log";
   $vhost = array();
 
   $vhost[] = "";
@@ -71,6 +72,8 @@ function provision_logs_provision_apache_vhost_config($uri, $data) {
   }
   $vhost[] = "# Set error log to site-specific file.";
   $vhost[] = "ErrorLog $error_log_path";
+  $vhost[] = "CustomLog $access_log_path combined";
+
   if ($logs_available) {
     $vhost[] = "";
     $vhost[] = "# Allow error log to be accessible from http://$uri/$log_url_path";
