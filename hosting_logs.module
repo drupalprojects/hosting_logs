@@ -180,6 +180,9 @@ function hosting_logs_page_error($node) {
  */
 function hosting_logs_page_dblog($node) {
 
+  $platform_node = node_load($node->platform);
+  $core_major_version = $platform_node->release->version[0];
+
   $db_node = node_load($node->db_server);
   $connection_data = $db_node->services['db'];
 
@@ -211,7 +214,15 @@ function hosting_logs_page_dblog($node) {
   db_set_active('target_site');
 
   // Check for enabled database log module.
-  if (db_query("SELECT status FROM {system} WHERE name = :name", array(':name' => 'dblog'))->fetchField()) {
+  if ($core_major_version < 8) {
+    $dblog_enabled = db_query("SELECT status FROM {system} WHERE name = :name", array(':name' => 'dblog'))->fetchField();
+  }
+  else {
+    // TODO: How do we dig into the enabled status of the dblog module in D8 from a D7 hostmaster site?
+    $dblog_enabled = db_table_exists('watchdog');
+  }
+
+  if ($dblog_enabled) {
     $header = array();
     $data = array();
     $result = db_query("DESCRIBE {watchdog}");
