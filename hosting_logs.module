@@ -186,7 +186,7 @@ function hosting_logs_page_dblog($node) {
   $db_node = node_load($node->db_server);
   $connection_data = $db_node->services['db'];
 
-  $host = reset($db_node->ip_addresses);
+  $host = $db_node->title;
   $dsn = sprintf("%s:host=%s", $connection_data->type, $host);
   if ($connection_data->has_port) {
     $dsn = "{$dsn};port={$connection_data->port}";
