@@ -337,6 +337,9 @@ function hosting_logs_node_load($nodes, $types) {
  */
 function hosting_logs_node_insert($node) {
   if ($node->type == 'site') {
+    if (!isset($node->logs_enabled)) {
+      _hosting_logs_node_load_defaults($node);
+    }
     $fields = array(
       'logs_enabled' => $node->logs_enabled,
       'logs_available' => $node->logs_available,
