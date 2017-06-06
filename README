@@ -34,4 +34,4 @@ NOTE: The basic auth placed before a site is not effective here.
 </Directory>
 ```
 
-- For log rotation with the standard logrotate utility, copy logrotate.d.example to /etc/logrotate.d/
+- For log rotation with the standard logrotate utility, copy logrotate.d.example to /etc/logrotate.d/hosting_logs
