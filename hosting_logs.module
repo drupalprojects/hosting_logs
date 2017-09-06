@@ -355,9 +355,8 @@ function hosting_logs_node_insert($node) {
  */
 function hosting_logs_node_update($node) {
   if ($node->type == 'site') {
-    if (empty($node->logs_enabled) || empty($node->logs_available) || empty($node->logs_visible)) {
-      _hosting_logs_node_load_defaults($node);
-    }
+    // Load default properties if they are not set.
+    _hosting_logs_node_load_defaults($node);
 
     db_merge('hosting_logs')
       ->key(array('site_nid' => $node->nid))
