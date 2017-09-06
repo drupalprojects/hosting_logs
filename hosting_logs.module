@@ -312,19 +312,20 @@ function hosting_logs_form_site_node_form_alter(&$form) {
 
 /**
  * Implements hook_node_load().
+ *
+ * NOTE: I removed the filter on $types because I was seeing site nodes in the list, but types only showed "tasks"!
+ *
  */
 function hosting_logs_node_load($nodes, $types) {
-
-  // Only operate on sites.
-  if (!in_array('site', $types)) {
-    return;
-  }
+  
+  $nids = array_keys($nodes);
 
   // Load all hosting_logs data where site_nid is in our nodes to load.
-  $result = db_query('SELECT * FROM {hosting_logs} WHERE site_nid IN(:nids)', array(
-    ':nids' => array_keys($nodes),
-  ));
-
+  $result = db_select('hosting_logs', 'hl')
+    ->fields('hl')
+    ->condition('hl.site_nid', $nids, 'IN')
+    ->execute();
+  
   foreach ($result as $record) {
     $nodes[$record->site_nid]->logs_enabled = $record->logs_enabled;
     $nodes[$record->site_nid]->logs_available = $record->logs_available;
@@ -337,9 +338,7 @@ function hosting_logs_node_load($nodes, $types) {
  */
 function hosting_logs_node_insert($node) {
   if ($node->type == 'site') {
-    if (!isset($node->logs_enabled)) {
-      _hosting_logs_node_load_defaults($node);
-    }
+    _hosting_logs_node_load_defaults($node);
     $fields = array(
       'logs_enabled' => $node->logs_enabled,
       'logs_available' => $node->logs_available,
@@ -354,10 +353,7 @@ function hosting_logs_node_insert($node) {
  * Implements hook_node_update().
  */
 function hosting_logs_node_update($node) {
-  if ($node->type == 'site') {
-    // Load default properties if they are not set.
-    _hosting_logs_node_load_defaults($node);
-
+  if ($node->type == 'site' && isset($node->logs_enabled) && isset($node->logs_available) && isset($node->logs_visible)) {
     db_merge('hosting_logs')
       ->key(array('site_nid' => $node->nid))
       ->fields(array(
