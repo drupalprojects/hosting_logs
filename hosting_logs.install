@@ -4,23 +4,7 @@
  * Install, update and uninstall functions for the hosting_logs module.
  *
  */
-
-
-/**
- * Implements hook_install().
- */
-function hosting_logs_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_logs')
-}
-/**
- * Implements hook_uninstall().
- */
-function hosting_logs_uninstall() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('hosting_logs')
-}
-
+ 
 /**
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
