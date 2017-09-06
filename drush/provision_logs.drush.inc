@@ -22,29 +22,6 @@ function drush_provision_logs_pre_provision_verify() {
 }
 
 /**
- * Implements drush_hook_pre_COMMAND().
- *
- * This runs for each tasks during the command
- *    drush @hostmaster hosting-tasks
- *
- * NOTE: This ONLY runs when being called from a hostmaster task.
- * This hook should ONLY be used to pass Options from a hostmaster task form to
- * the $task object, or if you don't need this functionality from the command
- * line.
- */
-function drush_provision_logs_pre_hosting_task() {
-
-  $task =& drush_get_context('HOSTING_TASK');
-
-  // Set options for a Verify task a site.
-  if ($task->ref->type == 'site' && $task->task_type == 'verify') {
-    $task->options['logs_enabled'] = $task->ref->logs_enabled;
-    $task->options['logs_available'] = $task->ref->logs_available;
-    $task->options['logs_visible'] = $task->ref->logs_visible;
-  }
-}
-
-/**
  * Implements hook_provision_apache_vhost_config().
  *
  * Sets each site's error log to be at /var/aegir/logs/$uri.error.log
