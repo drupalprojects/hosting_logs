@@ -148,7 +148,6 @@ function hosting_logs_page_error($node) {
   $uri = $node->title;
 
   $log_file_path = variable_get('provision_logs_file_path', '/var/log/aegir');
-  $log_url_path = variable_get('provision_logs_url_path', 'error.log');
 
   $path_to_log = "$log_file_path/$uri.error.log";
 
@@ -308,6 +307,21 @@ function hosting_logs_form_site_node_form_alter(&$form) {
     '#default_value' => isset($node->logs_visible) ? $node->logs_visible : FALSE,
   );
   return $form;
+}
+
+
+/**
+ * Allows a site to turn it's error logs on and off.
+ *
+ * Implements hook_form_alter() for site-node-form
+ */
+function hosting_logs_form_hosting_settings_alter(&$form) {
+  $form['provision_logs_file_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Hosting Logs Path'),
+    '#description' => t('The folder to use to store error and access logs.'),
+    '#default_value' => variable_get('provision_logs_file_path', '/var/log/aegir'),
+  );
 }
 
 /**
