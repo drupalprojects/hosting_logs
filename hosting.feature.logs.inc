@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   The hosting feature definition for hosting_logs.
+ * The hosting feature definition for hosting_logs.
  */
 
 /**
@@ -10,22 +10,21 @@
  *
  * This will be used to generate the 'admin/hosting' page.
  *
- * @return
- *  associative array indexed by feature key.
+ * Implements hook_hosting_feature().
+ *
+ * @return array
+ *   associative array indexed by feature key.
  */
 function hosting_logs_hosting_feature() {
   $features['logs'] = array(
-    // title to display in form
+    // Title to display in form.
     'title' => t('Webserver logs integration'),
-    // description
     'description' => t('Provides a sites error and watchdog logs to hostmaster front end. WARNING: Exposing logs could expose sensitive information.'),
-    // initial status ( HOSTING_FEATURE_DISABLED, HOSTING_FEATURE_ENABLED, HOSTING_FEATURE_REQUIRED )
+    // Initial status ( HOSTING_FEATURE_DISABLED, HOSTING_FEATURE_ENABLED, HOSTING_FEATURE_REQUIRED ).
     'status' => HOSTING_FEATURE_DISABLED,
-    // module to enable/disable alongside feature
+    // Module to enable/disable alongside feature.
     'module' => 'hosting_logs',
-    // associate with a specific node type.
-    //  'node' => 'nodetype',
-    // which group to display in ( null , experimental )
+    // Which group to display in ( null , experimental )
     'group' => 'experimental',
     'role_permissions' => array(
       'aegir platform manager' => array(
