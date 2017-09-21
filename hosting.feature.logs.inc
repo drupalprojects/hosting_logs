@@ -18,7 +18,7 @@ function hosting_logs_hosting_feature() {
     // title to display in form
     'title' => t('Webserver logs integration'),
     // description
-    'description' => t('Provides a sites error and watchdog logs to hostmaster front end.'),
+    'description' => t('Provides a sites error and watchdog logs to hostmaster front end. WARNING: Exposing logs could expose sensitive information.'),
     // initial status ( HOSTING_FEATURE_DISABLED, HOSTING_FEATURE_ENABLED, HOSTING_FEATURE_REQUIRED )
     'status' => HOSTING_FEATURE_DISABLED,
     // module to enable/disable alongside feature
