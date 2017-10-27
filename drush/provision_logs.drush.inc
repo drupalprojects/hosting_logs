@@ -12,11 +12,12 @@
 /**
  * Implements drush_hook_pre_COMMAND().
  *
- * Creates the /var/log/aegir folder if it does not exist.
+ * Creates the /var/log/aegir folder if it does not exist
+ * and we have write access.
  */
 function drush_provision_logs_pre_provision_verify() {
   $log_path = drush_get_option('provision_logs_path', '/var/log/aegir');
-  if (!file_exists($log_path)) {
+  if (!file_exists($log_path) && is_writable(dirname($log_path))) {
     mkdir($log_path, 0775);
   }
 }
